@@ -8,20 +8,19 @@ trigger:
 variables:
 
   # Azure Resource Manager connection created during pipeline creation
-  #azure_subscription: 'eb7de0f6-bf19-4d1d-9658-ca2bd01ee9f5'
-  azure_subscription: 'azure_service_conn_factorial_php'
+  azure_subscription: 'azure_service_conn_factorial_calc'
 
-  # Web app name
-  web_app_name: 'factorial-php'
+  # Name of the CI server.
+  web_app_name: 'factorial-calculator-ci'
 
-  # Name of the production web app
-  web_app_name_prod: 'factorial-php-prod'
+  # Name of the production server.
+  web_app_name_prod: 'factorial-calculator'
 
   # Agent VM image name
   vm_image_name: 'ubuntu-latest'
 
   # Environment name
-  environment_name: 'factorial-php'
+  environment_name: 'factorial-calculator'
 
   # Root folder under which your composer.json file is available.
   root_folder: $(System.DefaultWorkingDirectory)

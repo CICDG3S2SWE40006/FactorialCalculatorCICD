@@ -10,8 +10,7 @@ import selenium_utils as SU
 @pytest.fixture(scope = "module")
 def driver():
     # The URL to the web app.
-    l_url = "https://factorial-php.azurewebsites.net"
-    #l_url = "https://factorialcalculator.azurewebsites.net"
+    l_url = "https://factorial-calculator-ci.azurewebsites.net"
 
     # Options for the browser.
     l_chrome_options = webdriver.ChromeOptions()
