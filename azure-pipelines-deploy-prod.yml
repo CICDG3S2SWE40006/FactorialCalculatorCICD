@@ -9,16 +9,16 @@ variables:
 
   # Azure Resource Manager connection created during pipeline creation
   #azure_subscription: '61987e4a-04bc-4414-a870-139c2202335b'
-  azure_subscription: 'azure_service_conn_factorial_php'
+  azure_subscription: 'azure_service_conn_factorial_calc'
 
   # Web app name
-  web_app_name: 'factorial-php-prod'
+  web_app_name: 'factorial-calculator'
 
   # Agent VM image name
   vm_image_name: 'ubuntu-latest'
 
   # Environment name
-  environment_name: 'factorial-php-prod'
+  environment_name: 'factorial-calculator'
 
   # Root folder under which your composer.json file is available.
   root_folder: $(System.DefaultWorkingDirectory)
