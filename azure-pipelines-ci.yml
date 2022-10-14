@@ -8,14 +8,11 @@ trigger:
 variables:
 
   # Azure Resource Manager connection created during pipeline creation
-  #azure_subscription: 'eb7de0f6-bf19-4d1d-9658-ca2bd01ee9f5'
+  #azure_subscription: '824910a4-ebbd-4905-abdb-d8c48a529c08'
   azure_subscription: 'azure_service_conn_factorial_php'
 
   # Web app name
   web_app_name: 'factorial-php'
-
-  # Name of the production web app
-  web_app_name_prod: 'factorial-php-prod'
 
   # Agent VM image name
   vm_image_name: 'ubuntu-latest'
@@ -47,12 +44,6 @@ stages:
         php -version
       workingDirectory: $(root_folder)
       displayName: 'Use PHP version $(phpVersion)'
-
-    # Disable for now, as there's no 'composer.json' file with which to run this script.
-    # - script: composer install --no-interaction --prefer-dist
-    #   workingDirectory: $(rootFolder)
-    #   displayName: 'Composer install'
-
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:
@@ -65,7 +56,7 @@ stages:
       displayName: 'Upload package'
       artifact: drop
 
-- stage: DeployToCI
+- stage: Deploy
   displayName: 'Deploy Web App'
   dependsOn: Build
   condition: succeeded()
@@ -93,7 +84,7 @@ stages:
   displayName: 'Test Web App'
 
   # Testing can only occur if the web app was succeessfully deployed to CI server.
-  dependsOn: DeployToCI
+  dependsOn: Deploy
   condition: succeeded()
 
   jobs:
@@ -113,7 +104,6 @@ stages:
     - script: |
         google-chrome --version
       displayName: 'Check Google Chrome Version.'
-
     # Download Chrome Driver (necessary for Selenium).
     - script: |
         pwd
@@ -146,24 +136,3 @@ stages:
       inputs:
         testResultsFiles: '$(root_folder)/test/test_results.xml'
         testRunTitle: 'Publish test results.'
-
-# Deploy the web app to prod server (hasn't been made yet).
-- stage: DeployToProd
-  displayName: 'Deploy Web App to Prod Server.'
-  dependsOn: Test
-  condition: succeeded()
-  jobs:
-  - deployment: DeploymentJob
-    pool:
-      vmImage: $(vm_image_name)
-    environment: $(environment_name)
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : factorial-php-prod'
-            inputs:
-              azureSubscription: $(azure_subscription)
-              appName: $(web_app_name_prod)
-              package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
