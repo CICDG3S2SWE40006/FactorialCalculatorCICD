@@ -8,7 +8,6 @@ trigger:
 variables:
 
   # Azure Resource Manager connection created during pipeline creation
-  #azure_subscription: '61987e4a-04bc-4414-a870-139c2202335b'
   azure_subscription: 'azure_service_conn_factorial_calc'
 
   # Web app name
