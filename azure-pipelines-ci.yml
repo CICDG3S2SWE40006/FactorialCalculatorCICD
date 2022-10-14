@@ -7,10 +7,10 @@ trigger:
 
 variables:
 
-  # Azure Resource Manager connection created during pipeline creation
+  # Azure Resource Manager connection.
   azure_subscription: 'azure_service_conn_factorial_calc'
 
-  # Web app name
+  # Name of the CI server.
   web_app_name: 'factorial-calculator-ci'
 
   # Agent VM image name
@@ -24,7 +24,7 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build stage
+  displayName: Build Program
   variables:
     phpVersion: '7.3'
   jobs:
@@ -42,9 +42,9 @@ stages:
         sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
         php -version
       workingDirectory: $(root_folder)
-      displayName: 'Use PHP version $(phpVersion)'
+      displayName: 'Use PHP Version $(phpVersion)'
     - task: ArchiveFiles@2
-      displayName: 'Archive files'
+      displayName: 'Archive Files'
       inputs:
         rootFolderOrFile: '$(root_folder)'
         includeRootFolder: false
@@ -52,11 +52,11 @@ stages:
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
     - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-      displayName: 'Upload package'
+      displayName: 'Upload Package'
       artifact: drop
 
 - stage: Deploy
-  displayName: 'Deploy Web App'
+  displayName: 'Deploy Program to CI Server'
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -69,7 +69,7 @@ stages:
         deploy:
           steps:
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : factorial-php'
+            displayName: 'Deploy Program to CI Server (factorial-calculator-ci)'
             inputs:
               azureSubscription: $(azure_subscription)
               appName: $(web_app_name)
@@ -80,7 +80,7 @@ stages:
 # https://www.codewrecks.com/post/old/2018/11/run-python-test-with-azure-devops-pipeline/
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/ecosystems/python?view=azure-devops
 - stage: Test
-  displayName: 'Test Web App'
+  displayName: 'Test Program On CI Server'
 
   # Testing can only occur if the web app was succeessfully deployed to CI server.
   dependsOn: Deploy
@@ -102,7 +102,8 @@ stages:
     # Check google chrome version.
     - script: |
         google-chrome --version
-      displayName: 'Check Google Chrome Version.'
+      displayName: 'Check Google Chrome Version'
+
     # Download Chrome Driver (necessary for Selenium).
     - script: |
         pwd
@@ -111,7 +112,7 @@ stages:
         ls
         sudo mv chromedriver /bin/chromedriver
         ls
-      displayName: 'Download Chrome Driver.'
+      displayName: 'Download Chrome Driver'
 
     # Install Python packages.
     - script: |
@@ -121,12 +122,12 @@ stages:
         pip install pytest-xdist
         pip install pytest-bdd
         pip install selenium
-      displayName: 'Install necessary Python packages.'
+      displayName: 'Install Necessary Python Packages'
 
     # Run testing script.
     - script: |
         pytest $(root_folder)/test/test_script.py --junitxml=$(root_folder)/test/test_results.xml
-      displayName: 'Run testing Script.'
+      displayName: 'Run testing Script'
 
     # Publish Results (not sure what exactly this does. see https://learn.microsoft.com/en-us/azure/devops/pipelines/ecosystems/python?view=azure-devops).
     # There should be away to make the stage fail if the test results contain at least one failed test. Maybe it does this.
@@ -134,4 +135,4 @@ stages:
       condition: succeededOrFailed()
       inputs:
         testResultsFiles: '$(root_folder)/test/test_results.xml'
-        testRunTitle: 'Publish test results.'
+        testRunTitle: 'Publish Test Results'

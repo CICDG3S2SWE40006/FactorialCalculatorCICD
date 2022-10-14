@@ -7,11 +7,11 @@ trigger:
 
 variables:
 
-  # Azure Resource Manager connection created during pipeline creation
+  # Azure Resource Manager connection.
   azure_subscription: 'azure_service_conn_factorial_calc'
 
   # Name of the CI server.
-  web_app_name: 'factorial-calculator-ci'
+  web_app_name_ci: 'factorial-calculator-ci'
 
   # Name of the production server.
   web_app_name_prod: 'factorial-calculator'
@@ -45,15 +45,10 @@ stages:
         sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
         php -version
       workingDirectory: $(root_folder)
-      displayName: 'Use PHP version $(phpVersion)'
-
-    # Disable for now, as there's no 'composer.json' file with which to run this script.
-    # - script: composer install --no-interaction --prefer-dist
-    #   workingDirectory: $(rootFolder)
-    #   displayName: 'Composer install'
+      displayName: 'Use PHP Version $(phpVersion)'
 
     - task: ArchiveFiles@2
-      displayName: 'Archive files'
+      displayName: 'Archive Files'
       inputs:
         rootFolderOrFile: '$(root_folder)'
         includeRootFolder: false
@@ -61,11 +56,11 @@ stages:
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
     - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-      displayName: 'Upload package'
+      displayName: 'Upload Package'
       artifact: drop
 
 - stage: DeployToCI
-  displayName: 'Deploy Web App'
+  displayName: 'Deploy Program to CI Server'
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -78,10 +73,10 @@ stages:
         deploy:
           steps:
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : factorial-php'
+            displayName: 'Deploy Program to CI Server (factorial-calculator-ci)'
             inputs:
               azureSubscription: $(azure_subscription)
-              appName: $(web_app_name)
+              appName: $(web_app_name_ci)
               package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
 
 # Run tests on the web app that was just deployed to the CI server.
@@ -111,7 +106,7 @@ stages:
     # Check google chrome version.
     - script: |
         google-chrome --version
-      displayName: 'Check Google Chrome Version.'
+      displayName: 'Check Google Chrome Version'
 
     # Download Chrome Driver (necessary for Selenium).
     - script: |
@@ -121,7 +116,7 @@ stages:
         ls
         sudo mv chromedriver /bin/chromedriver
         ls
-      displayName: 'Download Chrome Driver.'
+      displayName: 'Download Chrome Driver'
 
     # Install Python packages.
     - script: |
@@ -131,12 +126,12 @@ stages:
         pip install pytest-xdist
         pip install pytest-bdd
         pip install selenium
-      displayName: 'Install necessary Python packages.'
+      displayName: 'Install Necessary Python Packages'
 
     # Run testing script.
     - script: |
         pytest $(root_folder)/test/test_script.py --junitxml=$(root_folder)/test/test_results.xml
-      displayName: 'Run testing Script.'
+      displayName: 'Run testing Script'
 
     # Publish Results (not sure what exactly this does. see https://learn.microsoft.com/en-us/azure/devops/pipelines/ecosystems/python?view=azure-devops).
     # There should be away to make the stage fail if the test results contain at least one failed test. Maybe it does this.
@@ -144,11 +139,11 @@ stages:
       condition: succeededOrFailed()
       inputs:
         testResultsFiles: '$(root_folder)/test/test_results.xml'
-        testRunTitle: 'Publish test results.'
+        testRunTitle: 'Publish Test Results'
 
 # Deploy the web app to prod server (hasn't been made yet).
 - stage: DeployToProd
-  displayName: 'Deploy Web App to Prod Server.'
+  displayName: 'Deploy Program to Prod Server'
   dependsOn: Test
   condition: succeeded()
   jobs:
@@ -161,7 +156,7 @@ stages:
         deploy:
           steps:
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : factorial-php-prod'
+            displayName: 'Deploy Program to Production Server (factorial-calculator)'
             inputs:
               azureSubscription: $(azure_subscription)
               appName: $(web_app_name_prod)

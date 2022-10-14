@@ -7,10 +7,10 @@ trigger:
 
 variables:
 
-  # Azure Resource Manager connection created during pipeline creation
+  # Azure Resource Manager connection.
   azure_subscription: 'azure_service_conn_factorial_calc'
 
-  # Web app name
+  # Name of the production server.
   web_app_name: 'factorial-calculator'
 
   # Agent VM image name
@@ -24,7 +24,7 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build stage
+  displayName: Build Program
   variables:
     phpVersion: '7.3'
   jobs:
@@ -42,10 +42,10 @@ stages:
         sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
         php -version
       workingDirectory: $(root_folder)
-      displayName: 'Use PHP version $(phpVersion)'
+      displayName: 'Use PHP Version $(phpVersion)'
 
     - task: ArchiveFiles@2
-      displayName: 'Archive files'
+      displayName: 'Archive Files'
       inputs:
         rootFolderOrFile: '$(root_folder)'
         includeRootFolder: false
@@ -53,11 +53,11 @@ stages:
         archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
         replaceExistingArchive: true
     - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-      displayName: 'Upload package'
+      displayName: 'Upload Package'
       artifact: drop
 
 - stage: Deploy
-  displayName: 'Deploy Web App.'
+  displayName: 'Deploy Program to Prod Server'
   dependsOn: Build
   condition: succeeded()
   jobs:
@@ -70,7 +70,7 @@ stages:
         deploy:
           steps:
           - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : factorial-php'
+            displayName: 'Deploy Program to Production Server (factorial-calculator)'
             inputs:
               azureSubscription: $(azure_subscription)
               appName: $(web_app_name)
