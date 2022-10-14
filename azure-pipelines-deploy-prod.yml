@@ -1,0 +1,78 @@
+# Build, package and deploy your PHP project to Azure Linux Web App.
+# Add steps that run tests and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/php
+
+trigger:
+- none
+
+variables:
+
+  # Azure Resource Manager connection created during pipeline creation
+  #azure_subscription: '61987e4a-04bc-4414-a870-139c2202335b'
+  azure_subscription: 'azure_service_conn_factorial_php'
+
+  # Web app name
+  web_app_name: 'factorial-php-prod'
+
+  # Agent VM image name
+  vm_image_name: 'ubuntu-latest'
+
+  # Environment name
+  environment_name: 'factorial-php-prod'
+
+  # Root folder under which your composer.json file is available.
+  root_folder: $(System.DefaultWorkingDirectory)
+
+stages:
+- stage: Build
+  displayName: Build stage
+  variables:
+    phpVersion: '7.3'
+  jobs:
+  - job: BuildJob
+    pool:
+      vmImage: $(vm_image_name)
+
+    steps:
+
+    - script: |
+        sudo update-alternatives --set php /usr/bin/php$(phpVersion)
+        sudo update-alternatives --set phar /usr/bin/phar$(phpVersion)
+        sudo update-alternatives --set phpdbg /usr/bin/phpdbg$(phpVersion)
+        sudo update-alternatives --set php-cgi /usr/bin/php-cgi$(phpVersion)
+        sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
+        php -version
+      workingDirectory: $(root_folder)
+      displayName: 'Use PHP version $(phpVersion)'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(root_folder)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+    - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+      displayName: 'Upload package'
+      artifact: drop
+
+- stage: Deploy
+  displayName: 'Deploy Web App.'
+  dependsOn: Build
+  condition: succeeded()
+  jobs:
+  - deployment: DeploymentJob
+    pool:
+      vmImage: $(vm_image_name)
+    environment: $(environment_name)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy Azure Web App : factorial-php'
+            inputs:
+              azureSubscription: $(azure_subscription)
+              appName: $(web_app_name)
+              package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
