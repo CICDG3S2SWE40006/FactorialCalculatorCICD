@@ -8,7 +8,7 @@ trigger:
 
 variables:
   # Azure Resource Manager connection created during pipeline creation
-  azureSubscription: '8e58ce36-fb51-49bb-95d2-05792f0f6ea6'
+  azureSubscription: 'azure_service_conn_factorial_calc'
 
   # Web app name
   webAppName: 'factorial-calculator-ci'
