@@ -10,7 +10,7 @@
         <meta name = "description" content = "A basic php-embedded web page that calculates a number's factorial." />
         <meta name = "keywords"    content = "factorial, n, factorial, nth" />
         <meta name = "author"      content = "Brett MacIsaac" />
-        <link href="style.css" rel="stylesheet">
+        <link href="style1.css" rel="stylesheet">
         <title>Factorial Calculator</title>
         
     </head>
