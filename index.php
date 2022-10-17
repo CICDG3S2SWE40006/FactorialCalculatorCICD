@@ -11,6 +11,7 @@
         <meta name = "keywords"    content = "factorial, n, factorial, nth" />
         <meta name = "author"      content = "Brett MacIsaac" />
         <title>Factorial Calculator</title>
+        <link href="style.css" rel="stylesheet">
         
     </head>
     
